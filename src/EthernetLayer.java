@@ -112,7 +112,8 @@ public class EthernetLayer implements BaseLayer {
 	//	- 채팅의 경우 0x2080, 파일의 경우 0x2090	   //
 	/////////////////////////////////////////////
 	public boolean fileSend(byte[] input, int length){
-		byte[] type = {0x02,0x09};
+		//byte[] type = {0x20,0x90}; // 20 90에 맞추어서 적었습니다.
+		byte[] type = {(byte)0x20,(byte)0x90};
 		this.SetEnetType(type);
 		byte[] bytes = ObjToByte(m_sHeader, input, length);
 		this.GetUnderLayer().Send(bytes, length + 14);
@@ -121,7 +122,8 @@ public class EthernetLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
-		byte[] type = {0x02,0x08};
+		//byte[] type = {0x02,0x08}; // 20 80에 맞추어서 적었습니다.
+		byte[] type = {(byte)0x20,(byte)0x80};
 		this.SetEnetType(type);
 		byte[] bytes = ObjToByte(m_sHeader, input, length);
 		this.GetUnderLayer().Send(bytes, length + 14);
@@ -190,8 +192,15 @@ public class EthernetLayer implements BaseLayer {
 			}
 		}
 		data = RemoveEtherHeader(input, input.length);
-		this.GetUpperLayer(0).Receive(data);
-
+		//this.GetUpperLayer(0).Receive(data);
+		
+		//buf[12] = Header.enet_type[0]; 0x20
+		//buf[13] = Header.enet_type[1]; 0x80
+		if(input[12] == (byte) 0x20){// Type 첫번쨰가 0x20일시.
+		if(input[13] == (byte)0x90)this.GetUpperLayer(1).Receive(data); // FileAppLayer로 전송
+		else if (input[13] ==(byte) 0x80) this.GetUpperLayer(0).Receive(data); //  Chatapplayer로 전송
+		}else return false; // 20이 아닐시 false 반환.
+		
 		return true;
 	}
 

@@ -29,7 +29,7 @@ public interface BaseLayer {
 		return false;
 	}
 	
-	public default boolean Recieve(byte[] input) {
+	public default boolean Receive(byte[] input) {
 		return false;
 	}
 	

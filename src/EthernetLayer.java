@@ -104,9 +104,26 @@ public class EthernetLayer implements BaseLayer {
 
 		return buf;
 	}
+	
+	/////////////////////////////////////////////
+	//	To-Do								   //
+	//	- file Send 함수 작성하기				   //
+	//	- Send 함수 type 설정					   //
+	//	- 채팅의 경우 0x2080, 파일의 경우 0x2090	   //
+	/////////////////////////////////////////////
+	public boolean fileSend(byte[] input, int length){
+		//byte[] type = {0x20,0x90}; // 20 90에 맞추어서 적었습니다.
+		byte[] type = {(byte)0x20,(byte)0x90};
+		this.SetEnetType(type);
+		byte[] bytes = ObjToByte(m_sHeader, input, length);
+		this.GetUnderLayer().Send(bytes, length + 14);
+
+		return false;
+	}
 
 	public boolean Send(byte[] input, int length) {
-		byte[] type = {0x06,0x08};
+		//byte[] type = {0x02,0x08}; // 20 80에 맞추어서 적었습니다.
+		byte[] type = {(byte)0x20,(byte)0x80};
 		this.SetEnetType(type);
 		byte[] bytes = ObjToByte(m_sHeader, input, length);
 		this.GetUnderLayer().Send(bytes, length + 14);
@@ -152,6 +169,12 @@ public class EthernetLayer implements BaseLayer {
 		return true;
 	}
 
+	//////////////////////////////////////////////////
+	//	To-Do List									//
+	//	Receive의 경우 받은 파일을 어느 레이어로 올려보낼지		//
+	//	1)채팅의 경우(0x2080) : ChatAppLayer로 보낸다		//
+	//	2)파일의 경우(0x2090) : FileAppLayer로 보낸다		//
+	//////////////////////////////////////////////////
 	public boolean Receive(byte[] input) {
 		byte[] data;
 		boolean MyPacket, Mine, Broadcast;
@@ -169,28 +192,19 @@ public class EthernetLayer implements BaseLayer {
 			}
 		}
 		data = RemoveEtherHeader(input, input.length);
-		this.GetUpperLayer(0).Receive(data);
-
+		//this.GetUpperLayer(0).Receive(data);
+		
+		//buf[12] = Header.enet_type[0]; 0x20
+		//buf[13] = Header.enet_type[1]; 0x80
+		if(input[12] == (byte) 0x20){// Type 첫번쨰가 0x20일시.
+		if(input[13] == (byte)0x90)this.GetUpperLayer(1).Receive(data); // FileAppLayer로 전송
+		else if (input[13] ==(byte) 0x80) this.GetUpperLayer(0).Receive(data); //  Chatapplayer로 전송
+		}else return false; // 20이 아닐시 false 반환.
+		
 		return true;
 	}
 
-	@Override
-	public void SetUnderLayer(BaseLayer pUnderLayer) {
-		// TODO Auto-generated method stub
-		if (pUnderLayer == null)
-			return;
-		this.p_UnderLayer = pUnderLayer;
-	}
-
-	@Override
-	public void SetUpperLayer(BaseLayer pUpperLayer) {
-		// TODO Auto-generated method stub
-		if (pUpperLayer == null)
-			return;
-		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
-		// nUpperLayerCount++;
-	}
-
+    
 	@Override
 	public String GetLayerName() {
 		// TODO Auto-generated method stub
@@ -214,10 +228,24 @@ public class EthernetLayer implements BaseLayer {
 	}
 
 	@Override
+	public void SetUnderLayer(BaseLayer pUnderLayer) {
+		// TODO Auto-generated method stub
+		if (pUnderLayer == null)
+			return;
+		this.p_UnderLayer = pUnderLayer;
+	}
+
+	@Override
+	public void SetUpperLayer(BaseLayer pUpperLayer) {
+		// TODO Auto-generated method stub
+		if (pUpperLayer == null)
+			return;
+		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
+	}
+
+	@Override
 	public void SetUpperUnderLayer(BaseLayer pUULayer) {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
-
 	}
 }
-

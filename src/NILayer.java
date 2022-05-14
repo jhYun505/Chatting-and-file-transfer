@@ -10,17 +10,6 @@ import org.jnetpcap.packet.PcapPacketHandler;
 
 public class NILayer implements BaseLayer {
 
-	static {
-		try {
-			// native Library Load
-			System.load(new File("jnetpcap.dll").getAbsolutePath());
-			System.out.println(new File("jnetpcap.dll").getAbsolutePath());
-		} catch (UnsatisfiedLinkError e) {
-			System.out.println("Native code library failed to load.\n" + e);
-			System.exit(1);
-		}
-	}
-
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
 	public BaseLayer p_UnderLayer = null;
@@ -32,10 +21,21 @@ public class NILayer implements BaseLayer {
 	public ArrayList<PcapIf> m_pAdapterList;
 	StringBuilder errbuf = new StringBuilder();
 
+	static {
+		try {
+			System.load(new File("jnetpcap.dll").getAbsolutePath());
+			System.out.println(new File("jnetpcap.dll").getAbsolutePath());
+		} catch (UnsatisfiedLinkError e) {
+			System.out.println("Native code library failed to load. \n" + e);
+			System.exit(0);
+
+		}
+
+	}
+
 	public NILayer(String pName) {
 		// super(pName);
 		pLayerName = pName;
-
 		m_pAdapterList = new ArrayList<PcapIf>();
 		m_iNumAdapter = 0;
 		SetAdapterList();
@@ -45,8 +45,7 @@ public class NILayer implements BaseLayer {
 		int snaplen = 64 * 1024; // Capture all packets, no trucation
 		int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
 		int timeout = 10 * 1000; // 10 seconds in millis
-		m_AdapterObject = Pcap.openLive(m_pAdapterList.get(m_iNumAdapter)
-				.getName(), snaplen, flags, timeout, errbuf);
+		m_AdapterObject = Pcap.openLive(m_pAdapterList.get(m_iNumAdapter).getName(), snaplen, flags, timeout, errbuf);
 	}
 
 	public PcapIf GetAdapterObject(int iIndex) {
@@ -62,11 +61,10 @@ public class NILayer implements BaseLayer {
 	public void SetAdapterList() {
 		// 현재 컴퓨터에 존재하는 모든 네트워크 어뎁터 목록 가져오기
 		int r = Pcap.findAllDevs(m_pAdapterList, errbuf);
-		System.out.println("I/F 개수: "+m_pAdapterList.size());
+		System.out.println("I/F 갯수: "+m_pAdapterList.size());
 		// 네트워크 어뎁터가 하나도 존재하지 않을 경우 에러 처리
 		if (r == Pcap.NOT_OK || m_pAdapterList.isEmpty())
-			System.out.println("[Error] 네트워크 어댑터를 읽지 못하였습니다. Error : "
-					+ errbuf.toString());
+			System.out.println("[Error] 네트워크 어댑터를 읽지 못하였습니다. Error : " + errbuf.toString());
 	}
 
 	public ArrayList<PcapIf> getAdapterList() {
@@ -74,6 +72,7 @@ public class NILayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
+
 		ByteBuffer buf = ByteBuffer.wrap(input);
 		if (m_AdapterObject.sendPacket(buf) != Pcap.OK) {
 			System.err.println(m_AdapterObject.getErr());
@@ -83,8 +82,7 @@ public class NILayer implements BaseLayer {
 	}
 
 	public boolean Receive() {
-		Receive_Thread thread = new Receive_Thread(m_AdapterObject,
-				this.GetUpperLayer(0));
+		Receive_Thread thread = new Receive_Thread(m_AdapterObject, this.GetUpperLayer(0));
 		Thread obj = new Thread(thread);
 		obj.start();
 

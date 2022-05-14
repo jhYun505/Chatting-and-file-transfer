@@ -104,9 +104,24 @@ public class EthernetLayer implements BaseLayer {
 
 		return buf;
 	}
+	
+	/////////////////////////////////////////////
+	//	To-Do								   //
+	//	- file Send 함수 작성하기				   //
+	//	- Send 함수 type 설정					   //
+	//	- 채팅의 경우 0x2080, 파일의 경우 0x2090	   //
+	/////////////////////////////////////////////
+	public boolean fileSend(byte[] input, int length){
+		byte[] type = {0x02,0x09};
+		this.SetEnetType(type);
+		byte[] bytes = ObjToByte(m_sHeader, input, length);
+		this.GetUnderLayer().Send(bytes, length + 14);
+
+		return false;
+	}
 
 	public boolean Send(byte[] input, int length) {
-		byte[] type = {0x06,0x08};
+		byte[] type = {0x02,0x08};
 		this.SetEnetType(type);
 		byte[] bytes = ObjToByte(m_sHeader, input, length);
 		this.GetUnderLayer().Send(bytes, length + 14);
@@ -152,6 +167,12 @@ public class EthernetLayer implements BaseLayer {
 		return true;
 	}
 
+	//////////////////////////////////////////////////
+	//	To-Do List									//
+	//	Receive의 경우 받은 파일을 어느 레이어로 올려보낼지		//
+	//	1)채팅의 경우(0x2080) : ChatAppLayer로 보낸다		//
+	//	2)파일의 경우(0x2090) : FileAppLayer로 보낸다		//
+	//////////////////////////////////////////////////
 	public boolean Receive(byte[] input) {
 		byte[] data;
 		boolean MyPacket, Mine, Broadcast;
@@ -174,23 +195,7 @@ public class EthernetLayer implements BaseLayer {
 		return true;
 	}
 
-	@Override
-	public void SetUnderLayer(BaseLayer pUnderLayer) {
-		// TODO Auto-generated method stub
-		if (pUnderLayer == null)
-			return;
-		this.p_UnderLayer = pUnderLayer;
-	}
-
-	@Override
-	public void SetUpperLayer(BaseLayer pUpperLayer) {
-		// TODO Auto-generated method stub
-		if (pUpperLayer == null)
-			return;
-		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
-		// nUpperLayerCount++;
-	}
-
+    
 	@Override
 	public String GetLayerName() {
 		// TODO Auto-generated method stub
@@ -214,10 +219,24 @@ public class EthernetLayer implements BaseLayer {
 	}
 
 	@Override
+	public void SetUnderLayer(BaseLayer pUnderLayer) {
+		// TODO Auto-generated method stub
+		if (pUnderLayer == null)
+			return;
+		this.p_UnderLayer = pUnderLayer;
+	}
+
+	@Override
+	public void SetUpperLayer(BaseLayer pUpperLayer) {
+		// TODO Auto-generated method stub
+		if (pUpperLayer == null)
+			return;
+		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
+	}
+
+	@Override
 	public void SetUpperUnderLayer(BaseLayer pUULayer) {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
-
 	}
 }
-

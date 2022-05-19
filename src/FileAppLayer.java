@@ -120,79 +120,82 @@ public class FileAppLayer implements BaseLayer{
     
      public void setAndStartSendFile() {
         new Thread() {
-	@Override
+	        @Override
 			public void run() {
-		ChatFileDlg upperLayer = (ChatFileDlg) GetUpperLayer(0);
-		File sendFile = upperLayer.getFile();
-		int sendTotalLength; // 보내야하는 총 크기
-		int sendedLength; // 현재 보낸 크기
-		resetSeqNum();
+                ChatFileDlg upperLayer = (ChatFileDlg) GetUpperLayer(0);
+                File sendFile = upperLayer.getFile();
+                int sendTotalLength; // 보내야하는 총 크기
+                int sendedLength; // 현재 보낸 크기
+                resetSeqNum();
 
-		try (FileInputStream fileInputStream = new FileInputStream(sendFile)) {
-		    sendedLength = 0;
-		    BufferedInputStream fileReader = new BufferedInputStream(fileInputStream);
-		    sendTotalLength = (int)sendFile.length();
-		    setFileSize(sendTotalLength);
-		    byte[] sendData =new byte[1448];
-		    ((ChatFileDlg)GetUpperLayer(0)).progressBar.setMaximum(sendTotalLength);
-		    if(sendTotalLength <= 1448) {
-			// 파일 정보 송신
-			setFragmentation(0);
-			setFileMsgType(0);
-			fileInfoSend(sendFile.getName().getBytes(), sendFile.getName().getBytes().length);
+                try (FileInputStream fileInputStream = new FileInputStream(sendFile)) {
+                    sendedLength = 0;
+                    BufferedInputStream fileReader = new BufferedInputStream(fileInputStream);
+                    sendTotalLength = (int)sendFile.length();
+                    setFileSize(sendTotalLength);
+                    byte[] sendData =new byte[1448];
+                    ((ChatFileDlg)GetUpperLayer(0)).progressBar.setMaximum(sendTotalLength);
+                    if(sendTotalLength <= 1448) {
+                        // 파일 정보 송신
+                        setFragmentation(0);
+                        setFileMsgType(0);
+                        fileInfoSend(sendFile.getName().getBytes(), sendFile.getName().getBytes().length);
 
-			// 파일 데이터 송신
-		      setFileMsgType(1);
-			fileReader.read(sendData);
-			Send(sendData, sendData.length);
-			sendedLength += sendData.length;
-			((ChatFileDlg)GetUpperLayer(0)).progressBar.setValue(sendedLength);
-		    } else {
-			sendedLength = 0;
-			// 파일 정보 송신
-		       setFragmentation(0);
-			setFileMsgType(0);
-			fileInfoSend(sendFile.getName().getBytes(), sendFile.getName().getBytes().length);
+                        // 파일 데이터 송신
+                        setFileMsgType(1);
+                        fileReader.read(sendData);
+                        Send(sendData, sendData.length);
+                        sendedLength += sendData.length;
+                        ((ChatFileDlg)GetUpperLayer(0)).progressBar.setValue(sendedLength);
+                    } else {
+                        sendedLength = 0;
+                        // 파일 정보 송신
+                        setFragmentation(0);
+                        setFileMsgType(0);
+                        fileInfoSend(sendFile.getName().getBytes(), sendFile.getName().getBytes().length);
 
-			// 파일 데이터 송신
-		      setFileMsgType(1);
-		       setFragmentation(1);
-			while(fileReader.read(sendData) != -1 && (sendedLength + 1448 < sendTotalLength)) {
+                        // 파일 데이터 송신
+                        setFileMsgType(1);
+                        setFragmentation(1);
+                        while(fileReader.read(sendData) != -1 && (sendedLength + 1448 < sendTotalLength)) {
 
-			  Send(sendData, 1448);
+                            Send(sendData, 1448);
 
-			    try {
-				Thread.sleep(4);
-			    } catch (InterruptedException e) {
-				e.printStackTrace();
-			    }
-			    sendedLength += 1448;
-			   increaseSeqNum();
-			   ((ChatFileDlg)GetUpperLayer(0)).progressBar.setValue(sendedLength);
+                            try {
+                                Thread.sleep(4);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            sendedLength += 1448;
+                            increaseSeqNum();
+                            ((ChatFileDlg)GetUpperLayer(0)).progressBar.setValue(sendedLength);
+                        }
 
-			}
+                        byte[] getRealDataFrame = new byte[sendTotalLength - sendedLength];
+                        setFragmentation(2);
+                        fileReader.read(sendData);
 
-			byte[] getRealDataFrame = new byte[sendTotalLength - sendedLength];
-			setFragmentation(2);
-			fileReader.read(sendData);
+                        for(int index = 0; index < getRealDataFrame.length; ++index) {
 
-			for(int index = 0; index < getRealDataFrame.length; ++index) {
+                            getRealDataFrame[index] = sendData[index];
+                        }
 
-			    getRealDataFrame[index] = sendData[index];
-			}
-
-			Send(getRealDataFrame, getRealDataFrame.length);
-			sendedLength += getRealDataFrame.length;
-			count = 0;
-			((ChatFileDlg)GetUpperLayer(0)).progressBar.setValue(sendedLength);
-		    }
-		    fileInputStream.close();
-		    fileReader.close();
-		} catch(IOException e) {
-		    e.printStackTrace();
-		}
-        }}.start();
+                        Send(getRealDataFrame, getRealDataFrame.length);
+                        sendedLength += getRealDataFrame.length;
+                        count = 0;
+                        ((ChatFileDlg)GetUpperLayer(0)).progressBar.setValue(sendedLength);
+                    }
+                    fileInputStream.close();
+                    fileReader.close();
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
+                upperLayer.ChattingArea.append("파일 전송 완료\n");
+                upperLayer.ChattingArea.setCaretPosition(upperLayer.ChattingArea.getDocument().getLength());
+            }
+        }.start();
     }
+
     private byte[] RemoveCappHeader(byte[] input, int length) { // FileApp의 Header를 제거해주는 함수
         byte[] buf = new byte[length - 12];
         for(int dataIndex = 0; dataIndex < length - 12; ++dataIndex)
@@ -248,12 +251,14 @@ public class FileAppLayer implements BaseLayer{
                             ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.append("파일 수신 및 생성 완료\n");
                             fileByteList = new ArrayList();
                         } catch (FileNotFoundException e) {
-                            ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.append("파일 수신 실패\n");
+                            ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.append("파일 수신 실패 - FileNotFound\n");
                             e.printStackTrace();
                         } catch (IOException e) {
-                            ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.append("파일 수신 실패\n");
+                            ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.append("파일 수신 실패 - IOException\n");
                             e.printStackTrace();
                         }
+                        ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.setCaretPosition
+                        		(((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.getDocument().getLength());
                     }
                 }
                 ((ChatFileDlg)this.GetUpperLayer(0)).progressBar.setValue(receivedLength); // Progressbar 갱신

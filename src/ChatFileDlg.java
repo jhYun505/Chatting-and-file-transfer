@@ -21,12 +21,14 @@ import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.JScrollPane;
 
 
 
 
 
 import org.jnetpcap.PcapIf;
+import javax.swing.ScrollPaneConstants;
 
 public class ChatFileDlg extends JFrame implements BaseLayer {
 
@@ -137,6 +139,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 					
 					((ChatAppLayer)m_LayerMgr.GetLayer("ChatApp")).Send(bytes, bytes.length);
 					//채팅창에 입력된 메시지를 chatApplayer로 보냄
+					ChattingArea.setCaretPosition(ChattingArea.getDocument().getLength());
 					ChattingWrite.setText(""); 
 					//채팅 입력란 다시 비워줌
 				} else {
@@ -197,16 +200,6 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 		contentPane.add(chattingPanel);
 		chattingPanel.setLayout(null);
 
-		JPanel chattingEditorPanel = new JPanel();// chatting write panel
-		chattingEditorPanel.setBounds(10, 15, 340, 210);
-		chattingPanel.add(chattingEditorPanel);
-		chattingEditorPanel.setLayout(null);
-
-		ChattingArea = new JTextArea();
-		ChattingArea.setEditable(false);
-		ChattingArea.setBounds(0, 0, 340, 210);
-		chattingEditorPanel.add(ChattingArea);// chatting edit
-
 		JPanel chattingInputPanel = new JPanel();// chatting write panel
 		chattingInputPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		chattingInputPanel.setBounds(10, 230, 250, 20);
@@ -220,7 +213,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 		
 
 		JPanel settingPanel = new JPanel();
-		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "setting",
+		settingPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "설정",
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		settingPanel.setBounds(380, 5, 236, 297);
 		contentPane.add(settingPanel);
@@ -307,7 +300,20 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 		chattingPanel.add(Chat_send_Button);// chatting send button
 		
 		
-		
+		JPanel chattingEditorPanel = new JPanel();// chatting write panel
+		chattingEditorPanel.setBounds(10, 15, 340, 210);
+		chattingPanel.add(chattingEditorPanel);
+		chattingEditorPanel.setLayout(null);
+
+		ChattingArea = new JTextArea();
+		ChattingArea.setEditable(false);
+		ChattingArea.setBounds(2, 0, 340, 210);
+		ChattingArea.setLineWrap(true);		// 메세지 길이가 길면 자동 줄 바꿈
+		JScrollPane scroll = new JScrollPane(ChattingArea);	// 채팅 내용이 길어지면 스크롤 바 생성되도록
+		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scroll.setBounds(0, 0, 340, 210);
+		chattingEditorPanel.add(scroll);
+
 		/////////////////////////////////////////////
 		//	TO-DO : 파일 전송 GUI 구현				   //
 		//  1) 파일 전송 박스						   //
@@ -376,6 +382,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 			byte[] data = input;   //byte 단위의 input data
 			Text = new String(data); //아래층에서 올라온 메시지를 String text로 변환해줌
 			ChattingArea.append("[RECV] : " + Text + "\n"); //채팅창에 수신메시지를 보여줌
+			ChattingArea.setCaretPosition(ChattingArea.getDocument().getLength());
 			return false;
 		}
 		return false ;

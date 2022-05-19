@@ -191,6 +191,7 @@ public class FileAppLayer implements BaseLayer{
                     e.printStackTrace();
                 }
                 upperLayer.ChattingArea.append("파일 전송 완료\n");
+                upperLayer.ChattingArea.setCaretPosition(upperLayer.ChattingArea.getDocument().getLength());
             }
         }.start();
     }
@@ -256,6 +257,8 @@ public class FileAppLayer implements BaseLayer{
                             ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.append("파일 수신 실패 - IOException\n");
                             e.printStackTrace();
                         }
+                        ((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.setCaretPosition
+                        		(((ChatFileDlg)this.GetUpperLayer(0)).ChattingArea.getDocument().getLength());
                     }
                 }
                 ((ChatFileDlg)this.GetUpperLayer(0)).progressBar.setValue(receivedLength); // Progressbar 갱신

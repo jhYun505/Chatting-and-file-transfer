@@ -171,7 +171,7 @@ public class ChatAppLayer implements BaseLayer {
     }
 
     private int byte2ToInt(byte value1, byte value2) {
-        return (int)((value1 << 8) | (value2));
+        return (int)(((value1 & 0xff) << 8) | (value2 & 0xff)); // NegativeArraySizeException 발생
     }
 
     @Override

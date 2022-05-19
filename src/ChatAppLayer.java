@@ -149,7 +149,7 @@ public class ChatAppLayer implements BaseLayer {
         		fragBytes = new byte[size];
         		fragCount = 1;
         		tempBytes = RemoveCappHeader(input, input.length);
-        		System.arraycopy(tempBytes, 0, fragBytes, 0, 10);
+        		System.arraycopy(tempBytes, 0, fragBytes, 0, 1456);
         	}
         	else {
         		tempBytes = RemoveCappHeader(input, input.length);

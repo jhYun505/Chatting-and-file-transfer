@@ -124,7 +124,7 @@ public class FileAppLayer implements BaseLayer{
 			public void run() {
 		ChatFileDlg upperLayer = (ChatFileDlg) GetUpperLayer(0);
 		File sendFile = upperLayer.getFile();
-			// 보내야하는 총 크기
+		int sendTotalLength; // 보내야하는 총 크기
 		int sendedLength; // 현재 보낸 크기
 		resetSeqNum();
 
@@ -191,7 +191,7 @@ public class FileAppLayer implements BaseLayer{
 		} catch(IOException e) {
 		    e.printStackTrace();
 		}
-        }.start();
+        }}.start();
     }
     private byte[] RemoveCappHeader(byte[] input, int length) { // FileApp의 Header를 제거해주는 함수
         byte[] buf = new byte[length - 12];

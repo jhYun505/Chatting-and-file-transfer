@@ -62,7 +62,8 @@ HW5. Chat And File Transfer
 ## To-do List
 
 ### ChatFileDlg
-- [x] Layer 생성하고 연결하기 -> 모두 양방향 연결. `m_LayerMgr.ConnectLayers("NI ( *Ethernet ( *ChatApp ( *GUI ) *FileApp ( +GUI ) ))");`
+- [x] Layer 생성하고 연결하기 -> 모두 양방향 연결. 
+  `ConnectLayers("NI ( *Ethernet ( *ChatApp ( *GUI ) *FileApp ( *GUI ) ))");`
 - [x] 파일 전송 부분 GUI 작성
 - [x] 파일 전송 관련 버튼 eventListener 작성
 - [x] ProgressBar 구현 : 파일 전송에 따라 어떻게 업데이트 할 지(쓰레드?)

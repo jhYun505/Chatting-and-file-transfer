@@ -2,7 +2,8 @@
 - 사용 Protocol : Stop and Wait
   - 데이터를 보내고 나서 수신자로부터 ACK가 올 때까지 기다린다.
   - FLOWCHART
-  <img src="https://user-images.githubusercontent.com/81208791/169483990-6fbf02c5-adb2-4391-bb93-18908263926d.png" width="500"/>
+    ![image](https://user-images.githubusercontent.com/81208791/169484859-b112d8d8-97e3-4a39-ac08-57291580fafe.png)
+
 
 
 - 전송 시나리오

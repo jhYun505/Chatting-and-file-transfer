@@ -149,7 +149,7 @@ public class ChatAppLayer implements BaseLayer {
         		fragBytes = new byte[size];
         		fragCount = 1;
         		tempBytes = RemoveCappHeader(input, input.length);
-        		System.arraycopy(tempBytes, 0, fragBytes, 0, 10);
+        		System.arraycopy(tempBytes, 0, fragBytes, 0, 1456);
         	}
         	else {
         		tempBytes = RemoveCappHeader(input, input.length);
@@ -171,7 +171,7 @@ public class ChatAppLayer implements BaseLayer {
     }
 
     private int byte2ToInt(byte value1, byte value2) {
-        return (int)((value1 << 8) | (value2));
+        return (int)(((value1 & 0xff) << 8) | (value2 & 0xff)); // NegativeArraySizeException 발생
     }
 
     @Override

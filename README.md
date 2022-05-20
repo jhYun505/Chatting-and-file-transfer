@@ -78,3 +78,13 @@ HW5. Chat And File Transfer
 - [x] 패킷 type 부분 수정 필요
 - [x] 패킷 길이 변경(원래 단편화 기준은 10bytes -> Ethernet frame MTU = 1500bytes)
 - [x] Stop & Wait 프로토콜로 변경
+
+
+## 실습 결과
+1. 채팅 전송
+![image](https://user-images.githubusercontent.com/81208791/169489927-0db247b2-417b-452e-850d-45669930cb46.png)
+
+2. 파일 전송
+  ![image](https://user-images.githubusercontent.com/81208791/169490222-1f7a0ed5-6df7-498b-9fac-05e59b5233d7.png)
+  ![image](https://user-images.githubusercontent.com/81208791/169490318-2f367046-6873-4694-a699-62e7163f9e59.png)
+

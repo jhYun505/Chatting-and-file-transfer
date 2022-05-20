@@ -32,7 +32,7 @@ public class ChatAppLayer implements BaseLayer {
         // TODO Auto-generated constructor stub
         pLayerName = pName;
         ResetHeader();
-        //ackChk.add(true);
+        ackChk.add(true);
     }
 
     private void ResetHeader() {
@@ -83,11 +83,11 @@ public class ChatAppLayer implements BaseLayer {
         this.GetUnderLayer().Send(bytes, bytes.length);
 
         int maxLen = length / 1456;
-
+        
         m_sHeader.capp_type = (byte)(0x02);
         m_sHeader.capp_totlen = intToByte2(1456);
         for(i = 1; i < maxLen; i++) {
-        	//waitACK();
+        	waitACK();
         	/* 마지막 전송인 경우 */
         	if(i + 1 < maxLen && length % 1456 == 0) {
         		m_sHeader.capp_type = (byte)(0x03);
@@ -96,11 +96,12 @@ public class ChatAppLayer implements BaseLayer {
         	bytes = objToByte(m_sHeader, bytes, bytes.length);
         	this.GetUnderLayer().Send(bytes, bytes.length);
         }
+        
 
         if (length % 1456 != 0) {
-        	//waitACK();
+        	waitACK();
+        	/* 마지막 전송 */
             m_sHeader.capp_type = (byte) (0x03);
-            /*과제  - 마지막 전송은 type을 0x03 */
             int remain = length % 1456;
             m_sHeader.capp_totlen = intToByte2(remain);
             bytes = new byte[remain];
@@ -115,10 +116,8 @@ public class ChatAppLayer implements BaseLayer {
         m_sHeader.capp_totlen = intToByte2(length);
         m_sHeader.capp_type = (byte) (0x00);
  
-        /*  배열이 1456보다 크면 -> fragSend()를 이용해 단편화 시켜서 송신
-         *  나머지 경우  ->  데이터의 정보를 담은 헤더를 붙이고 하위계층으로 데이터를  Send 
-         */
-        //waitACK();
+        /*  배열이 1456보다 크면 -> fragSend()를 이용해 단편화 시켜서 송신         */
+        waitACK();
         if(length > 1456) {
         	fragSend(input, length);
         }
@@ -134,7 +133,7 @@ public class ChatAppLayer implements BaseLayer {
         int tempType = 0;
 
         if (input == null) {
-        	//ackChk.add(true);
+        	ackChk.add(true);
         	return true;
         }
         tempType |= (byte) (input[2] & 0xFF);
@@ -149,7 +148,7 @@ public class ChatAppLayer implements BaseLayer {
         		fragBytes = new byte[size];
         		fragCount = 1;
         		tempBytes = RemoveCappHeader(input, input.length);
-        		System.arraycopy(tempBytes, 0, fragBytes, 0, 10);
+        		System.arraycopy(tempBytes, 0, fragBytes, 0, 1456);
         	}
         	else {
         		tempBytes = RemoveCappHeader(input, input.length);
@@ -158,7 +157,7 @@ public class ChatAppLayer implements BaseLayer {
         			this.GetUpperLayer(0).Receive(fragBytes);
         	}
         }
-        //this.GetUnderLayer().Send(null, 0); //하위 Layer에 ack 송신
+        this.GetUnderLayer().Send(null, 0); //하위 Layer에 ack 송신
         return true;
     }
     
@@ -171,7 +170,7 @@ public class ChatAppLayer implements BaseLayer {
     }
 
     private int byte2ToInt(byte value1, byte value2) {
-        return (int)((value1 << 8) | (value2));
+        return (int)(((value1 & 0xff) << 8) | (value2 & 0xff)); // NegativeArraySizeException 발생
     }
 
     @Override

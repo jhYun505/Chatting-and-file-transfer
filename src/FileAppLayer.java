@@ -15,9 +15,12 @@ public class FileAppLayer implements BaseLayer{
 	private ArrayList<byte[]> fileByteList;	//수신할 파일 프레임(정렬 전)
 	private ArrayList<byte[]> fileSortList;	// 수신한 파일을 정렬하는데 사용하는 리스트
 	
+	private ArrayList<Boolean> ackChk = new ArrayList<Boolean>();	// ack 확인용 리스트
+	
 	public FileAppLayer(String pName) {
 		pLayerName = pName;
 		fileByteList = new ArrayList();
+		ackChk.add(true);		// ack list 준비과정
 	}
 	
 	public class _FAPP_HEADER {
@@ -97,6 +100,17 @@ public class FileAppLayer implements BaseLayer{
         this.Send(input, length); // 파일 정보 송신
 
         return true;
+    }
+    
+    private void waitACK() { //ACK 체크
+        while (ackChk.size() <= 0) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        ackChk.remove(0);
     }
     
     // 프레임을 다 받았는지 확인 후, 모두 정확히 수신했으면 정렬을 진행하는 함수
@@ -206,6 +220,11 @@ public class FileAppLayer implements BaseLayer{
 
     public synchronized boolean Receive(byte[] input) { // 데이터를 수신 처리 함수
         byte[] data;
+        
+        if(input == null) {	// ACK 수신
+        	ackChk.add(true);
+        	return true;
+        }
 
         if(checkReceiveFileInfo(input)) { // 파일의 정보를 받은 경우
             data = RemoveCappHeader(input, input.length); // Header없애기
@@ -262,9 +281,12 @@ public class FileAppLayer implements BaseLayer{
                     }
                 }
                 ((ChatFileDlg)this.GetUpperLayer(0)).progressBar.setValue(receivedLength); // Progressbar 갱신
+               
+                
             }
         }
-
+        // 파일 조각을 받았다는 뜻이므로 하위 레이어(Ethernet Layer)에 ACK 보내야한다.
+        ((EthernetLayer)this.GetUnderLayer()).fileSend(null, 0);
         return true;
     }
 
@@ -294,6 +316,7 @@ public class FileAppLayer implements BaseLayer{
     }
 
     public boolean Send(byte[] input, int length) { // 데이터 송신 함수
+    	waitACK();	//ACK 기다렸다가 오면 보낸다.
         byte[] bytes = this.ObjToByte(m_sHeader, input, length);
         ((EthernetLayer)this.GetUnderLayer()).fileSend(bytes, length + 12);
         return true;

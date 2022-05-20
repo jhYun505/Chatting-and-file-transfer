@@ -79,6 +79,21 @@ HW5. Chat And File Transfer
 - [x] 패킷 길이 변경(원래 단편화 기준은 10bytes -> Ethernet frame MTU = 1500bytes)
 - [x] Stop & Wait 프로토콜로 변경
 
+## Ethernet 패킷 타입
+![image](https://user-images.githubusercontent.com/81208791/169623540-7bfb8f8c-26d3-4280-99cf-da7d6036150b.png)
+
+- 채팅 관련 패킷 : 0x208X
+  - 채팅 데이터 : 0x2080
+  - 채팅 ACK : 0x2081
+- 파일 관련 패킷 : 0x209X
+  - 파일 데이터 : 0x2090
+  - 파일 ACK : 0x2091
+
+채팅은 0x208X, 파일은 0x209X로 설정해서 패킷의 타입을 보고 채팅 관련인지, 파일 관련인지 알 수 있도록 함.
+
+각각의 ACK 패킷의 경우 내용이 NULL이므로 이더넷 패킷의 헤더 부분만 존재 
+
+->   Dst Address (6bytes) + Src Address (6 bytes) + type (2bytes) = Packet Size가 14
 
 ## 실습 결과
 1. 채팅 전송

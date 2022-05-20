@@ -91,9 +91,6 @@ HW5. Chat And File Transfer
 
 채팅은 0x208X, 파일은 0x209X로 설정해서 패킷의 타입을 보고 채팅 관련인지, 파일 관련인지 알 수 있도록 함.
 
-각각의 ACK 패킷의 경우 내용이 NULL이므로 이더넷 패킷의 헤더 부분만 존재 
-
-->   Dst Address (6bytes) + Src Address (6 bytes) + type (2bytes) = Packet Size가 14
 
 ## 실습 결과
 1. 채팅 전송
